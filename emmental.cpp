@@ -1,6 +1,7 @@
 #include <functional>
 #include <fstream>
 #include <iostream>
+#include <queue>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -8,6 +9,9 @@
 // The stack for the program. Since everything pushed to the stack will be a
 // character anyway, I just use a string for the stack
 std::string stack;
+
+// The queue for the Emmental program
+std::queue<char> queue;
 
 // The current definitions for every character
 std::unordered_map<char, std::vector<void(*)()>> instruction_defs;
@@ -59,6 +63,19 @@ void execute() {
     } while (tail_end_recursion);
 }
 
+void enqueue() {
+    queue.push(stack.back());
+}
+
+void dequeue() {
+    stack.push_back(queue.front());
+    queue.pop();
+}
+
+void dup() {
+    stack.push_back(stack.back());
+}
+
 void init_interpreter() {
     instruction_defs = {
         {'#', {push_char<'\0'>}},
@@ -76,6 +93,9 @@ void init_interpreter() {
         {'.', {output}},
         {'!', {redefine}},
         {'?', {execute}},
+        {'^', {enqueue}},
+        {'v', {dequeue}},
+        {':', {dup}}
     };
 }
 
