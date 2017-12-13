@@ -10,7 +10,7 @@
 std::string stack;
 
 // The current definitions for every character
-std::unordered_map<char, std::vector<std::function<void()>>> instruction_defs;
+std::unordered_map<char, std::vector<void(*)()>> instruction_defs;
 
 template <char c>
 void push_digit() {
@@ -27,6 +27,38 @@ void output() {
     stack.pop_back();
 }
 
+void redefine() {
+    auto to_define = stack.back();
+    stack.pop_back();
+    auto index = stack.find_last_of(';');
+    auto new_def = stack.substr(index + 1);
+    stack.erase(index);
+    std::vector<void(*)()> function;
+    for (auto c: new_def) {
+        auto &instruction = instruction_defs[c];
+        function.insert(function.end(), instruction.begin(), instruction.end());
+    }
+    instruction_defs[to_define] = function;
+}
+
+void execute() {
+    bool tail_end_recursion;
+    do {
+        auto to_execute = instruction_defs[stack.back()];
+        stack.pop_back();
+
+        tail_end_recursion = false;
+        for (auto it = to_execute.begin(); it != to_execute.end(); ++it) {
+            if (*it == execute and it + 1 == to_execute.end()) {
+                tail_end_recursion = true;
+                break;
+            } else {
+                (*it)();
+            }
+        }
+    } while (tail_end_recursion);
+}
+
 void init_interpreter() {
     instruction_defs = {
         {'#', {push_char<'\0'>}},
@@ -41,7 +73,9 @@ void init_interpreter() {
         {'7', {push_digit<7>}},
         {'8', {push_digit<8>}},
         {'9', {push_digit<9>}},
-        {'.', {output}}
+        {'.', {output}},
+        {'!', {redefine}},
+        {'?', {execute}},
     };
 }
 
