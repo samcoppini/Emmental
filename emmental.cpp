@@ -76,6 +76,40 @@ void dup() {
     stack.push_back(stack.back());
 }
 
+void plus() {
+    auto c1 = stack.back();
+    stack.pop_back();
+    auto c2 = stack.back();
+    stack.pop_back();
+    stack.push_back(c1 + c2);
+}
+
+void minus() {
+    auto c1 = stack.back();
+    stack.pop_back();
+    auto c2 = stack.back();
+    stack.pop_back();
+    stack.push_back(c2 - c1);
+}
+
+void discrete_log() {
+    unsigned char c = stack.back();
+    stack.pop_back();
+    char log_result = 0;
+    if (c == 0) {
+        log_result = 8;
+    } else {
+        while (c >>= 1) {
+            log_result++;
+        }
+    }
+    stack.push_back(log_result);
+}
+
+void input() {
+    stack.push_back(std::cin.get());
+}
+
 void init_interpreter() {
     instruction_defs = {
         {'#', {push_char<'\0'>}},
@@ -95,7 +129,11 @@ void init_interpreter() {
         {'?', {execute}},
         {'^', {enqueue}},
         {'v', {dequeue}},
-        {':', {dup}}
+        {':', {dup}},
+        {'+', {plus}},
+        {'-', {minus}},
+        {'~', {discrete_log}},
+        {',', {input}},
     };
 }
 
